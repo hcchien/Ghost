@@ -1,7 +1,7 @@
 import BaseValidator from './base';
 
 export default BaseValidator.create({
-    properties: ['title', 'metaTitle', 'metaDescription'],
+    properties: ['title', 'subtitle', 'metaTitle', 'metaDescription'],
 
     title(model) {
         let title = model.get('title');
@@ -13,6 +13,15 @@ export default BaseValidator.create({
 
         if (!validator.isLength(title, 0, 150)) {
             model.get('errors').add('title', 'Title cannot be longer than 150 characters.');
+            this.invalidate();
+        }
+    },
+
+    subtitle(model) {
+        let subtitle = model.get('subtitle');
+
+        if (!validator.isLength(subtitle, 0, 150)) {
+            model.get('errors').add('subtitle', 'Subtitle cannot be longer than 150 characters.');
             this.invalidate();
         }
     },
