@@ -9,6 +9,7 @@ var testUtils   = require('../../utils'),
 
     // Stuff we are testing
     utils       = require('../../../server/utils'),
+    gravatar    = require('../../../server/utils/gravatar'),
     UserModel   = require('../../../server/models/user').User,
     RoleModel   = require('../../../server/models/role').Role,
     events      = require('../../../server/events'),
@@ -38,10 +39,6 @@ describe('User Model', function run() {
         it('can add first', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -55,10 +52,6 @@ describe('User Model', function run() {
         it('shortens slug if possible', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('slug').should.equal(true);
@@ -69,10 +62,6 @@ describe('User Model', function run() {
 
         it('does not short slug if not possible', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2];
-
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
 
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
@@ -99,10 +88,6 @@ describe('User Model', function run() {
         it('does NOT lowercase email', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[2];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(userData, context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -114,7 +99,7 @@ describe('User Model', function run() {
         it('can find gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+            sandbox.stub(gravatar, 'lookup', function (userData) {
                 userData.image = 'http://www.gravatar.com/avatar/2fab21a4c4ed88e76add10650c73bae1?d=404';
                 return Promise.resolve(userData);
             });
@@ -132,7 +117,7 @@ describe('User Model', function run() {
         it('can handle no gravatar', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[0];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
+            sandbox.stub(gravatar, 'lookup', function (userData) {
                 return Promise.resolve(userData);
             });
 
@@ -287,7 +272,7 @@ describe('User Model', function run() {
                 .then(function (paginationResult) {
                     should.exist(paginationResult.meta);
 
-                    paginationResult.meta.pagination.page.should.be.a.Number;
+                    paginationResult.meta.pagination.page.should.be.a.Number();
 
                     done();
                 }).catch(done);
@@ -336,18 +321,14 @@ describe('User Model', function run() {
         it('can invite user', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
                 createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
                 createdUser.attributes.email.should.eql(userData.email, 'email address correct');
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 done();
             }).catch(done);
@@ -355,10 +336,6 @@ describe('User Model', function run() {
 
         it('can add active user', function (done) {
             var userData = testUtils.DataGenerator.forModel.users[4];
-
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
 
             RoleModel.findOne().then(function (role) {
                 userData.roles = [role.toJSON()];
@@ -371,9 +348,9 @@ describe('User Model', function run() {
                 createdUser.get('email').should.eql(userData.email, 'email address correct');
                 createdUser.related('roles').toJSON()[0].name.should.eql('Administrator', 'role set correctly');
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
-                eventSpy.secondCall.calledWith('user.activated').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
+                eventSpy.secondCall.calledWith('user.activated').should.be.true();
 
                 done();
             }).catch(done);
@@ -394,9 +371,9 @@ describe('User Model', function run() {
                 should.exist(edited);
                 edited.attributes.website.should.equal('http://some.newurl.com');
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.firstCall.calledWith('user.activated.edited').should.be.true;
-                eventSpy.secondCall.calledWith('user.edited').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.firstCall.calledWith('user.activated.edited').should.be.true();
+                eventSpy.secondCall.calledWith('user.edited').should.be.true();
 
                 done();
             }).catch(done);
@@ -406,10 +383,6 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 userId;
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -419,15 +392,15 @@ describe('User Model', function run() {
 
                 userId = createdUser.attributes.id;
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 return UserModel.edit({website: 'http://some.newurl.com'}, {id: userId});
             }).then(function (createdUser) {
                 createdUser.attributes.status.should.equal('invited');
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.secondCall.calledWith('user.edited').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.secondCall.calledWith('user.edited').should.be.true();
                 done();
             }).catch(done);
         });
@@ -436,10 +409,6 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 userId;
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -449,16 +418,16 @@ describe('User Model', function run() {
 
                 userId = createdUser.attributes.id;
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 return UserModel.edit({status: 'active'}, {id: userId});
             }).then(function (createdUser) {
                 createdUser.attributes.status.should.equal('active');
 
-                eventSpy.calledThrice.should.be.true;
-                eventSpy.secondCall.calledWith('user.activated').should.be.true;
-                eventSpy.thirdCall.calledWith('user.edited').should.be.true;
+                eventSpy.calledThrice.should.be.true();
+                eventSpy.secondCall.calledWith('user.activated').should.be.true();
+                eventSpy.thirdCall.calledWith('user.edited').should.be.true();
                 done();
             }).catch(done);
         });
@@ -476,11 +445,11 @@ describe('User Model', function run() {
                 // Destroy the user
                 return UserModel.destroy(firstUser);
             }).then(function (response) {
-                response.toJSON().should.be.empty;
+                response.toJSON().should.be.empty();
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.firstCall.calledWith('user.deactivated').should.be.true;
-                eventSpy.secondCall.calledWith('user.deleted').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.firstCall.calledWith('user.deactivated').should.be.true();
+                eventSpy.secondCall.calledWith('user.deleted').should.be.true();
 
                 // Double check we can't find the user again
                 return UserModel.findOne(firstUser);
@@ -495,10 +464,6 @@ describe('User Model', function run() {
             var userData = testUtils.DataGenerator.forModel.users[4],
                 userId;
 
-            sandbox.stub(UserModel, 'gravatarLookup', function (userData) {
-                return Promise.resolve(userData);
-            });
-
             UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
                 should.exist(createdUser);
                 createdUser.has('uuid').should.equal(true);
@@ -508,16 +473,16 @@ describe('User Model', function run() {
 
                 userId = {id: createdUser.attributes.id};
 
-                eventSpy.calledOnce.should.be.true;
-                eventSpy.firstCall.calledWith('user.added').should.be.true;
+                eventSpy.calledOnce.should.be.true();
+                eventSpy.firstCall.calledWith('user.added').should.be.true();
 
                 // Destroy the user
                 return UserModel.destroy(userId);
             }).then(function (response) {
-                response.toJSON().should.be.empty;
+                response.toJSON().should.be.empty();
 
-                eventSpy.calledTwice.should.be.true;
-                eventSpy.secondCall.calledWith('user.deleted').should.be.true;
+                eventSpy.calledTwice.should.be.true();
+                eventSpy.secondCall.calledWith('user.deleted').should.be.true();
 
                 // Double check we can't find the user again
                 return UserModel.findOne(userId);

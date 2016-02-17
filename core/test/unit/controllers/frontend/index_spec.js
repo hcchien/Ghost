@@ -34,177 +34,6 @@ describe('Frontend Controller', function () {
         };
     }
 
-    describe('index', function () {
-        var req, res;
-
-        beforeEach(function () {
-            sandbox.stub(api.posts, 'browse', function () {
-                return Promise.resolve({
-                    posts: [],
-                    meta: {
-                        pagination: {
-                            page: 1,
-                            pages: 3
-                        }
-                    }
-                });
-            });
-
-            configUtils.set({
-                theme: {
-                    permalinks: '/:slug/',
-                    postsPerPage: 10
-                }
-            });
-
-            req = {
-                app: {get: function () { return 'casper';}},
-                path: '/', params: {}, route: {}
-            };
-
-            res = {
-                locals: {}
-            };
-        });
-
-        it('Renders home.hbs template when it exists in the active theme', function (done) {
-            configUtils.set({paths: {availableThemes: {casper: {
-                'index.hbs': '/content/themes/casper/index.hbs',
-                'home.hbs': '/content/themes/casper/home.hbs'
-            }}}});
-
-            res.render = function (view) {
-                view.should.equal('home');
-                done();
-            };
-
-            frontend.index(req, res, failTest(done));
-        });
-
-        it('Renders index.hbs template on 2nd page when home.hbs exists', function (done) {
-            configUtils.set({paths: {availableThemes: {casper: {
-                'index.hbs': '/content/themes/casper/index.hbs',
-                'home.hbs': '/content/themes/casper/home.hbs'
-            }}}});
-
-            req.path = '/page/2/';
-            req.params = {page: 2};
-
-            res.render = function (view) {
-                // assertion
-                view.should.equal('index');
-                done();
-            };
-
-            frontend.index(req, res, failTest(done));
-        });
-
-        it('Renders index.hbs template when home.hbs doesn\'t exist', function (done) {
-            configUtils.set({paths: {availableThemes: {casper: {
-                'index.hbs': '/content/themes/casper/index.hbs'
-            }}}});
-
-            res.render = function (view) {
-                view.should.equal('index');
-                done();
-            };
-
-            frontend.index(req, res, failTest(done));
-        });
-    });
-
-    describe('tag', function () {
-        var req, res,
-            mockTags = [{
-                name: 'video',
-                slug: 'video',
-                id: 1
-            }, {
-                name: 'audio',
-                slug: 'audio',
-                id: 2
-            }];
-
-        beforeEach(function () {
-            sandbox.stub(api.posts, 'browse').returns(new Promise.resolve({
-                posts: [{}],
-                meta: {pagination: {page: 1, pages: 1}}
-            }));
-
-            sandbox.stub(api.tags, 'read').returns(new Promise.resolve({tags: [mockTags[0]]}));
-
-            configUtils.set({
-                theme: {
-                    permalinks: '/tag/:slug/',
-                    postsPerPage: '10'
-                }
-            });
-
-            req = {
-                app: {get: function () { return 'casper';}},
-                path: '/', params: {}, route: {}
-            };
-
-            res = {
-                locals: {}
-            };
-        });
-
-        it('it will render custom tag-slug template if it exists', function (done) {
-            configUtils.set({paths: {availableThemes: {casper: {
-                'tag-video.hbs': '/content/themes/casper/tag-video.hbs',
-                'tag.hbs': '/content/themes/casper/tag.hbs',
-                'index.hbs': '/content/themes/casper/index.hbs'
-            }}}});
-
-            req.path = '/tag/' + mockTags[0].slug;
-            req.params.slug = mockTags[0].slug;
-            req.route = {path: '/tag/:slug'};
-            res.render = function (view, context) {
-                view.should.equal('tag-video');
-                context.tag.should.eql(mockTags[0]);
-                done();
-            };
-
-            frontend.tag(req, res, failTest(done));
-        });
-
-        it('it will render tag template if it exists and there is no tag-slug template', function (done) {
-            configUtils.set({paths: {availableThemes: {casper: {
-                'tag.hbs': '/content/themes/casper/tag.hbs',
-                'index.hbs': '/content/themes/casper/index.hbs'
-            }}}});
-
-            req.path = '/tag/' + mockTags[0].slug;
-            req.params.slug = mockTags[0].slug;
-            req.route = {path: '/tag/:slug'};
-            res.render = function (view, context) {
-                view.should.equal('tag');
-                context.tag.should.eql(mockTags[0]);
-                done();
-            };
-
-            frontend.tag(req, res, failTest(done));
-        });
-
-        it('it will fall back to index if there are no custom templates', function (done) {
-            configUtils.set({paths: {availableThemes: {casper: {
-                'index.hbs': '/content/themes/casper/index.hbs'
-            }}}});
-
-            req.path = '/tag/' + mockTags[0].slug;
-            req.params.slug = mockTags[0].slug;
-            req.route = {path: '/tag/:slug'};
-            res.render = function (view, context) {
-                view.should.equal('index');
-                context.tag.should.eql(mockTags[0]);
-                done();
-            };
-
-            frontend.tag(req, res, failTest(done));
-        });
-    });
-
     describe('single', function () {
         var req, res, casper, mockPosts = [{
                 posts: [{
@@ -376,7 +205,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -385,7 +214,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test', mockPosts[0].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -393,7 +222,7 @@ describe('Frontend Controller', function () {
                 it('will redirect static page to admin edit page via /:slug/edit', function (done) {
                     req.path = '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
                     res.redirect = function (arg) {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[0].posts[0].id + '/');
                         done();
                     };
@@ -405,8 +234,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['2012/12/30', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -415,8 +244,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test', mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -450,7 +279,7 @@ describe('Frontend Controller', function () {
                     res.render = sinon.spy();
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -459,7 +288,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + [mockPosts[0].posts[0].slug, 'edit'].join('/') + '/';
                     res.render = sinon.spy();
                     res.redirect = function (arg) {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[0].posts[0].id + '/');
                         done();
                     };
@@ -473,8 +302,8 @@ describe('Frontend Controller', function () {
                     res.redirect = sinon.spy();
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -500,7 +329,7 @@ describe('Frontend Controller', function () {
                     req.route = {path: '*'};
                     res.render = function (view, context) {
                         view.should.equal('post');
-                        context.post.should.exist;
+                        should.exist(context.post);
                         context.post.should.equal(mockPosts[1].posts[0]);
                         done();
                     };
@@ -512,7 +341,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['2012/12/30', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -521,7 +350,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -530,7 +359,7 @@ describe('Frontend Controller', function () {
                 it('will redirect post to admin edit page via /:slug/edit', function (done) {
                     req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
                     res.redirect = function (arg) {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
                         done();
                     };
@@ -542,8 +371,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['2012/12/30', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -552,8 +381,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -567,8 +396,8 @@ describe('Frontend Controller', function () {
                         }
 
                         should.not.exist(err);
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -594,7 +423,7 @@ describe('Frontend Controller', function () {
 
                     res.render = function (view, context) {
                         view.should.equal('post');
-                        context.post.should.exist;
+                        should.exist(context.post);
                         context.post.should.equal(mockPosts[1].posts[0]);
                         done();
                     };
@@ -607,7 +436,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -616,7 +445,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + mockPosts[1].posts[0].slug + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -625,7 +454,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -635,7 +464,7 @@ describe('Frontend Controller', function () {
                     var dateFormat = moment(mockPosts[1].posts[0].published_at).format('YYYY/MM/DD');
                     req.path = '/' + [dateFormat, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
                     res.redirect = function (arg) {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
                         done();
                     };
@@ -647,8 +476,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -657,8 +486,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -696,7 +525,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + [date, mockPosts[1].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -705,7 +534,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test-2', mockPosts[1].posts[0].slug].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -714,7 +543,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + mockPosts[1].posts[0].slug + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -724,7 +553,7 @@ describe('Frontend Controller', function () {
                     req.path = '/' + ['test', mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     res.redirect = function (arg) {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
                         done();
                     };
@@ -737,8 +566,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + [date, mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -747,8 +576,8 @@ describe('Frontend Controller', function () {
                     req.path = '/' + [mockPosts[1].posts[0].slug, 'edit'].join('/') + '/';
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -798,7 +627,7 @@ describe('Frontend Controller', function () {
                         };
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -814,7 +643,7 @@ describe('Frontend Controller', function () {
                         };
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -829,7 +658,7 @@ describe('Frontend Controller', function () {
                         };
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
+                        res.render.called.should.be.false();
                         done();
                     });
                 });
@@ -844,7 +673,7 @@ describe('Frontend Controller', function () {
                             locals: {},
                             render: sinon.spy(),
                             redirect: function (arg) {
-                                res.render.called.should.be.false;
+                                res.render.called.should.be.false();
                                 arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
                                 done();
                             }
@@ -864,8 +693,8 @@ describe('Frontend Controller', function () {
                         };
 
                     frontend.single(req, res, function () {
-                        res.render.called.should.be.false;
-                        res.redirect.called.should.be.false;
+                        res.render.called.should.be.false();
+                        res.redirect.called.should.be.false();
                         done();
                     });
                 });
@@ -893,7 +722,7 @@ describe('Frontend Controller', function () {
                             locals: {},
                             render: sinon.spy(),
                             redirect: function (arg) {
-                                res.render.called.should.be.false;
+                                res.render.called.should.be.false();
                                 arg.should.eql(adminEditPagePath + mockPosts[1].posts[0].id + '/');
                                 done();
                             }
@@ -1080,8 +909,8 @@ describe('Frontend Controller', function () {
 
             frontend.preview(req, res, function (err) {
                 should.not.exist(err);
-                res.render.called.should.be.false;
-                res.redirect.called.should.be.false;
+                res.render.called.should.be.false();
+                res.redirect.called.should.be.false();
                 done();
             });
         });
@@ -1089,7 +918,7 @@ describe('Frontend Controller', function () {
         it('should call redirect if post is published', function (done) {
             req.params = {uuid: 'abc-1234-03'};
             res.redirect = function (status, url) {
-                res.render.called.should.be.false;
+                res.render.called.should.be.false();
                 status.should.eql(301);
                 url.should.eql('/getting-started/');
                 done();
