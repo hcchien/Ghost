@@ -6,6 +6,17 @@
 var path = require('path'),
     config;
 
+// Go to your API credentials and create a server to server auth with json key
+// put the key json file into 'content/data' folder
+var GCLOUD_STORAGE = {
+  active: 'gcloud',
+  'gcloud': {
+      projectId: 'Your_project_id',
+      key: 'content/data/twreporter-OOO.json', // if is in the ghost root folder just add the name of the file
+      bucket: 'Your_bucket_name',
+  }
+};
+
 config = {
     // ### Production
     // When running Ghost in the wild, use the production environment.
@@ -24,7 +35,9 @@ config = {
         server: {
             host: '127.0.0.1',
             port: '2368'
-        }
+        },
+
+        storage: GCLOUD_STORAGE
     },
 
     // ### Development **(default)**
@@ -69,7 +82,9 @@ config = {
         // Specify where your content directory lives
         paths: {
             contentPath: path.join(__dirname, '/content/')
-        }
+        },
+
+        storage: GCLOUD_STORAGE
     },
 
     // **Developers only need to edit below here**
@@ -97,7 +112,8 @@ config = {
             host: '127.0.0.1',
             port: '2369'
         },
-        logging: false
+        logging: false,
+        storage: GCLOUD_STORAGE,
     },
 
     // ### Testing MySQL
@@ -118,7 +134,8 @@ config = {
             host: '127.0.0.1',
             port: '2369'
         },
-        logging: false
+        logging: false,
+        storage: GCLOUD_STORAGE
     },
 
     // ### Testing pg
@@ -139,7 +156,8 @@ config = {
             host: '127.0.0.1',
             port: '2369'
         },
-        logging: false
+        logging: false,
+        storage: GCLOUD_STORAGE
     }
 };
 

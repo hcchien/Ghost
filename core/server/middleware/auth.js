@@ -71,7 +71,7 @@ auth = {
     // ### Authenticate Client Middleware
     authenticateClient: function authenticateClient(req, res, next) {
         // skip client authentication if bearer token is present
-        if (isBearerAutorizationHeader(req) || labs.isSet('publicAPI') === true) {
+        if (isBearerAutorizationHeader(req)) {
             return next();
         }
 
