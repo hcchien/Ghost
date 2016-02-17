@@ -3,6 +3,7 @@ var db = {
             id: {type: 'increments', nullable: false, primary: true},
             uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
             title: {type: 'string', maxlength: 150, nullable: false},
+            subtitle: {type: 'string', maxlength: 150, nullable: true},
             slug: {type: 'string', maxlength: 150, nullable: false, unique: true},
             markdown: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},
             html: {type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true},

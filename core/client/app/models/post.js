@@ -12,6 +12,7 @@ export default Model.extend(ValidationEngine, {
 
     uuid: attr('string'),
     title: attr('string', {defaultValue: ''}),
+    subtitle: attr('string', {defaultValue: ''}),
     slug: attr('string'),
     markdown: attr('string', {defaultValue: ''}),
     html: attr('string'),

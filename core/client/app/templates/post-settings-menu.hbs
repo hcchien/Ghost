@@ -26,6 +26,13 @@
                 {{gh-url-preview slug=slugValue tagName="p" classNames="description"}}
             </div>
 
+            {{#gh-form-group errors=model.errors hasValidated=model.hasValidated property="subtitle"}}
+                <label for="subtitle">Subtitle</label>
+                {{gh-input id="post-subtitle" name="subtitle" value=model.subtitle focus-out="setSubtitle"}}
+                {{gh-error-message errors=model.errors property="subtitle"}}
+                <p>Maximum: <b>150</b> characters. You’ve used {{gh-count-down-characters model.subtitle 150}}</p>
+            {{/gh-form-group}}
+
             {{#gh-form-group errors=model.errors property="post-setting-date"}}
                 <label for="post-setting-date">Publish Date</label>
                 {{gh-datetime-input value=model.published_at

@@ -353,6 +353,27 @@ export default Controller.extend(SettingsMenuMixin, {
             model.save();
         },
 
+        setSubtitle(subtitle) {
+            let property = 'subtitle';
+            let model = this.get('model');
+            let currentSubtitle = model.get(property) || '';
+
+            // Only update if the subtitle has changed
+            if (currentSubtitle === subtitle) {
+                return;
+            }
+
+            model.set(property, subtitle);
+
+            // If this is a new post.  Don't save the model.  Defer the save
+            // to the user pressing the save button
+            if (model.get('isNew')) {
+                return;
+            }
+
+            model.save();
+        },
+
         setMetaDescription(metaDescription) {
             let property = 'meta_description';
             let model = this.get('model');
